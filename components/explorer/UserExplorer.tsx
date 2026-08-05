@@ -6,6 +6,7 @@ import { fetchUserProfile, fetchUserRepos } from "../../lib/github";
 import SearchBar from "./SearchBar";
 import UserProfileCard from "./UserProfileCard";
 import RepositoryList from "./RepositoryList";
+import AiProfileSummary from "./AiProfileSummary";
 
 export default function UserExplorer() {
   const [user, setUser] = useState<GitHubUser | null>(null);
@@ -16,14 +17,17 @@ export default function UserExplorer() {
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+
   // Search user profile and fetch page 1 of repos
   const handleSearch = async (username: string) => {
     setLoading(true);
     setError(null);
+    setAiSummary(null);
     setCurrentPageNumber(1);
 
     try {
-      // Fetch user profile + page 1 repos (10 items) on demand
       const [profileData, page1Repos] = await Promise.all([
         fetchUserProfile(username),
         fetchUserRepos(username, 1, 10),
@@ -58,6 +62,33 @@ export default function UserExplorer() {
     }
   };
 
+  // Generate AI Profile Summary (only runs if not already loading or generated)
+  const handleGenerateSummary = async () => {
+    if (!user || aiSummaryLoading || aiSummary) return;
+
+    setAiSummaryLoading(true);
+    setAiSummary(null);
+
+    try {
+      const response = await fetch("/api/ai/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user, repos }),
+      });
+
+      const data = await response.json();
+      if (data.summary) {
+        setAiSummary(data.summary);
+      } else {
+        setAiSummary("Could not generate AI profile summary.");
+      }
+    } catch (err) {
+      setAiSummary("Failed to reach AI summary service.");
+    } finally {
+      setAiSummaryLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
       <h2 className="text-xl font-bold mb-1 text-center text-gray-900">
@@ -73,7 +104,21 @@ export default function UserExplorer() {
         <p className="text-red-600 text-sm text-center mb-4 font-medium">{error}</p>
       )}
 
-      {user && <UserProfileCard user={user} />}
+      {user && (
+        <UserProfileCard
+          user={user}
+          onSummarize={handleGenerateSummary}
+          loadingSummary={aiSummaryLoading}
+          hasSummary={Boolean(aiSummary)}
+        />
+      )}
+
+      {/* AI Profile Summary View */}
+      <AiProfileSummary
+        summary={aiSummary}
+        loading={aiSummaryLoading}
+        onClose={() => setAiSummary(null)}
+      />
 
       {user && (
         <RepositoryList
