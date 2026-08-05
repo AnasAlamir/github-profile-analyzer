@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GitHubUser, GitHubRepo } from "../../types/github";
 import { fetchUserProfile, fetchUserRepos } from "../../lib/github";
+import {
+  getProfileNote,
+  saveProfileNote,
+  getRepoNote,
+  saveRepoNote,
+  getAllRepoNotes,
+} from "../../lib/notes";
 import SearchBar from "./SearchBar";
 import UserProfileCard from "./UserProfileCard";
 import RepositoryList from "./RepositoryList";
 import AiProfileSummary from "./AiProfileSummary";
 import AiRepoChatModal from "./AiRepoChatModal";
+import NotesModal from "../common/NotesModal";
 
 export default function UserExplorer() {
   const [user, setUser] = useState<GitHubUser | null>(null);
@@ -25,6 +33,28 @@ export default function UserExplorer() {
   // AI Repo Chat State
   const [selectedRepoForChat, setSelectedRepoForChat] = useState<GitHubRepo | null>(null);
 
+  // Notes Modal State
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [notesModalTitle, setNotesModalTitle] = useState("");
+  const [notesModalInitialNote, setNotesModalInitialNote] = useState("");
+  const [notesModalSaveHandler, setNotesModalSaveHandler] = useState<
+    (note: string) => void
+  >(() => () => {});
+  const [currentProfileNote, setCurrentProfileNote] = useState("");
+  const [repoNotesMap, setRepoNotesMap] = useState<Record<string, string>>({});
+
+  // Reload notes state
+  const refreshNotes = () => {
+    if (user) {
+      setCurrentProfileNote(getProfileNote(user.login));
+    }
+    setRepoNotesMap(getAllRepoNotes());
+  };
+
+  useEffect(() => {
+    refreshNotes();
+  }, [user]);
+
   // Search user profile and fetch page 1 of repos
   const handleSearch = async (username: string) => {
     setLoading(true);
@@ -40,6 +70,8 @@ export default function UserExplorer() {
 
       setUser(profileData);
       setRepos(page1Repos);
+      setCurrentProfileNote(getProfileNote(profileData.login));
+      setRepoNotesMap(getAllRepoNotes());
     } catch (err: any) {
       setError(err.message || "Failed to fetch GitHub data");
       setUser(null);
@@ -94,6 +126,31 @@ export default function UserExplorer() {
     }
   };
 
+  // Open Notes Modal for User Profile
+  const handleOpenProfileNote = () => {
+    if (!user) return;
+    setNotesModalTitle(`Profile @${user.login}`);
+    setNotesModalInitialNote(getProfileNote(user.login));
+    setNotesModalSaveHandler(() => (content: string) => {
+      saveProfileNote(user.login, content);
+      setCurrentProfileNote(content);
+      setNotesModalOpen(false);
+    });
+    setNotesModalOpen(true);
+  };
+
+  // Open Notes Modal for Repository
+  const handleOpenRepoNote = (repo: GitHubRepo) => {
+    setNotesModalTitle(`Repo ${repo.full_name}`);
+    setNotesModalInitialNote(getRepoNote(repo.full_name));
+    setNotesModalSaveHandler(() => (content: string) => {
+      saveRepoNote(repo.full_name, content);
+      setRepoNotesMap(getAllRepoNotes());
+      setNotesModalOpen(false);
+    });
+    setNotesModalOpen(true);
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
       <h2 className="text-xl font-bold mb-1 text-center text-gray-900">
@@ -115,6 +172,9 @@ export default function UserExplorer() {
           onSummarize={handleGenerateSummary}
           loadingSummary={aiSummaryLoading}
           hasSummary={Boolean(aiSummary)}
+          onOpenNote={handleOpenProfileNote}
+          hasNote={Boolean(currentProfileNote)}
+          noteContent={currentProfileNote}
         />
       )}
 
@@ -133,6 +193,8 @@ export default function UserExplorer() {
           onPageChange={handlePageChange}
           loading={loadingRepos}
           onSelectRepoForChat={(repo) => setSelectedRepoForChat(repo)}
+          onOpenRepoNote={handleOpenRepoNote}
+          repoNotesMap={repoNotesMap}
         />
       )}
 
@@ -143,6 +205,15 @@ export default function UserExplorer() {
           onClose={() => setSelectedRepoForChat(null)}
         />
       )}
+
+      {/* Notes Modal */}
+      <NotesModal
+        isOpen={notesModalOpen}
+        onClose={() => setNotesModalOpen(false)}
+        title={notesModalTitle}
+        initialNote={notesModalInitialNote}
+        onSave={notesModalSaveHandler}
+      />
     </div>
   );
 }

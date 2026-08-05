@@ -8,6 +8,9 @@ interface UserProfileCardProps {
   onSummarize?: () => void;
   loadingSummary?: boolean;
   hasSummary?: boolean;
+  onOpenNote?: () => void;
+  hasNote?: boolean;
+  noteContent?: string;
 }
 
 export default function UserProfileCard({
@@ -15,6 +18,9 @@ export default function UserProfileCard({
   onSummarize,
   loadingSummary,
   hasSummary,
+  onOpenNote,
+  hasNote,
+  noteContent,
 }: UserProfileCardProps) {
   return (
     <div className="border border-gray-200 p-4 rounded-lg flex flex-col items-center text-center mb-6 bg-white relative">
@@ -37,32 +43,52 @@ export default function UserProfileCard({
       </a>
       {user.bio && <p className="text-gray-600 text-sm mb-3">{user.bio}</p>}
 
-      {/* AI Summary Button - Disabled when loading or when summary is already generated */}
-      {onSummarize && (
-        <button
-          onClick={onSummarize}
-          disabled={loadingSummary || hasSummary}
-          className={`mb-4 px-3.5 py-1.5 text-xs font-medium rounded shadow-xs transition flex items-center gap-1.5 ${
-            hasSummary
-              ? "bg-purple-100 text-purple-800 border border-purple-200 cursor-default"
-              : loadingSummary
-              ? "bg-purple-400 text-white cursor-not-allowed"
-              : "bg-purple-600 hover:bg-purple-700 text-white"
-          }`}
-        >
-          {loadingSummary ? (
-            <>
-              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Generating Summary...
-            </>
-          ) : hasSummary ? (
-            "✨ Summary Generated"
-          ) : (
-            "✨ AI Profile Summary"
-          )}
-        </button>
+      {/* Action Buttons Row: AI Summary & Add Note */}
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+        {onSummarize && (
+          <button
+            onClick={onSummarize}
+            disabled={loadingSummary || hasSummary}
+            className={`px-3 py-1.5 text-xs font-medium rounded shadow-xs transition flex items-center gap-1 ${
+              hasSummary
+                ? "bg-purple-100 text-purple-800 border border-purple-200 cursor-default"
+                : loadingSummary
+                ? "bg-purple-400 text-white cursor-not-allowed"
+                : "bg-purple-600 hover:bg-purple-700 text-white"
+            }`}
+          >
+            {loadingSummary ? (
+              <>
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Generating...
+              </>
+            ) : hasSummary ? (
+              "✨ Summary Generated"
+            ) : (
+              "✨ AI Summary"
+            )}
+          </button>
+        )}
+
+        {onOpenNote && (
+          <button
+            onClick={onOpenNote}
+            className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-800 rounded border border-gray-300 transition flex items-center gap-1"
+          >
+            📝 {hasNote ? "Edit Note" : "Add Note"}
+          </button>
+        )}
+      </div>
+
+      {/* Display Saved Profile Note Box */}
+      {hasNote && noteContent && (
+        <div className="w-full bg-yellow-50/70 border border-yellow-200 p-3 rounded text-left mb-4 text-xs text-yellow-950">
+          <span className="font-bold block mb-1 text-yellow-900">📝 Profile Note:</span>
+          <p className="whitespace-pre-wrap">{noteContent}</p>
+        </div>
       )}
 
+      {/* Stats Footer */}
       <div className="flex gap-6 text-sm font-semibold border-t border-gray-100 pt-3 w-full justify-center">
         <div>
           <span className="block text-gray-900">{user.public_repos}</span>

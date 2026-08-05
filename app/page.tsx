@@ -4,9 +4,10 @@ import { useState } from "react";
 import Navbar from "../components/Navbar";
 import UserExplorer from "../components/explorer/UserExplorer";
 import UserCompare from "../components/compare/UserCompare";
+import UserNotes from "../components/notes/UserNotes";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"explorer" | "compare">("explorer");
+  const [activeTab, setActiveTab] = useState<"explorer" | "compare" | "notes">("explorer");
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 font-sans text-gray-900">
@@ -17,7 +18,7 @@ export default function Home() {
             🚀 GitHub Profile Explorer
           </h1>
           <p className="text-sm text-gray-600 mt-1">
-            Search GitHub developers, explore public repositories, and compare developer metrics.
+            Search GitHub developers, explore public repositories, save notes, and compare developer metrics.
           </p>
         </div>
 
@@ -27,6 +28,7 @@ export default function Home() {
         {/* Feature Tab Views */}
         {activeTab === "explorer" && <UserExplorer />}
         {activeTab === "compare" && <UserCompare />}
+        {activeTab === "notes" && <UserNotes />}
       </div>
     </div>
   );

@@ -9,6 +9,8 @@ interface RepositoryListProps {
   onPageChange: (newPage: number) => void;
   loading: boolean;
   onSelectRepoForChat?: (repo: GitHubRepo) => void;
+  onOpenRepoNote?: (repo: GitHubRepo) => void;
+  repoNotesMap?: Record<string, string>;
 }
 
 export default function RepositoryList({
@@ -18,6 +20,8 @@ export default function RepositoryList({
   onPageChange,
   loading,
   onSelectRepoForChat,
+  onOpenRepoNote,
+  repoNotesMap = {},
 }: RepositoryListProps) {
   const itemsPerPage = 10;
   const totalPages = Math.ceil(totalPublicRepos / itemsPerPage) || 1;
@@ -51,48 +55,74 @@ export default function RepositoryList({
       {/* Repositories Grid */}
       {!loading && repos.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {repos.map((repo) => (
-            <div
-              key={repo.id}
-              className="border border-gray-200 p-4 rounded-lg flex flex-col justify-between hover:border-gray-300 bg-white shadow-xs"
-            >
-              <div>
-                <a
-                  href={repo.html_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-bold text-blue-600 hover:underline text-base break-all"
-                >
-                  {repo.name}
-                </a>
-                <p className="text-gray-600 text-xs mt-1 line-clamp-2">
-                  {repo.description || "No description provided."}
-                </p>
-              </div>
+          {repos.map((repo) => {
+            const repoNote = repoNotesMap[repo.full_name.toLowerCase()];
+            const hasNote = Boolean(repoNote);
 
-              <div className="mt-4 pt-2 border-t border-gray-100 flex items-center justify-between">
-                <div className="flex items-center gap-3 text-xs text-gray-500">
-                  {repo.language && (
-                    <span className="font-medium text-gray-700">
-                      ⚡ {repo.language}
-                    </span>
+            return (
+              <div
+                key={repo.id}
+                className="border border-gray-200 p-4 rounded-lg flex flex-col justify-between hover:border-gray-300 bg-white shadow-xs"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <a
+                      href={repo.html_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-bold text-blue-600 hover:underline text-base break-all"
+                    >
+                      {repo.name}
+                    </a>
+                  </div>
+
+                  <p className="text-gray-600 text-xs mt-1 line-clamp-2">
+                    {repo.description || "No description provided."}
+                  </p>
+
+                  {/* Saved Repo Note Display */}
+                  {hasNote && (
+                    <div className="mt-2 text-[11px] bg-yellow-50 text-yellow-900 border border-yellow-200 p-2 rounded line-clamp-2">
+                      📝 {repoNote}
+                    </div>
                   )}
-                  <span>⭐ {repo.stargazers_count}</span>
-                  <span>🍴 {repo.forks_count}</span>
                 </div>
 
-                {/* AI Chat Button */}
-                {onSelectRepoForChat && (
-                  <button
-                    onClick={() => onSelectRepoForChat(repo)}
-                    className="px-2.5 py-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded transition flex items-center gap-1"
-                  >
-                    🤖 AI Chat
-                  </button>
-                )}
+                <div className="mt-4 pt-2 border-t border-gray-100 flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    {repo.language && (
+                      <span className="font-medium text-gray-700">
+                        ⚡ {repo.language}
+                      </span>
+                    )}
+                    <span>⭐ {repo.stargazers_count}</span>
+                    <span>🍴 {repo.forks_count}</span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-1.5">
+                    {onOpenRepoNote && (
+                      <button
+                        onClick={() => onOpenRepoNote(repo)}
+                        className="px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 rounded border border-gray-200 transition"
+                      >
+                        📝 {hasNote ? "Note" : "Add Note"}
+                      </button>
+                    )}
+
+                    {onSelectRepoForChat && (
+                      <button
+                        onClick={() => onSelectRepoForChat(repo)}
+                        className="px-2.5 py-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded transition flex items-center gap-1"
+                      >
+                        🤖 AI Chat
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
