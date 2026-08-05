@@ -38,7 +38,12 @@ export default function UserCompare() {
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mt-4">
-      <h2 className="text-xl font-bold mb-4 text-center">⚔️ Compare GitHub Users</h2>
+      <h2 className="text-xl font-bold mb-1 text-center text-gray-900">
+        ⚔️ Compare GitHub Users
+      </h2>
+      <p className="text-xs text-gray-500 text-center mb-5">
+        Compare two GitHub developers side-by-side on stars, forks, followers, and top languages.
+      </p>
 
       {/* Comparison Input Form */}
       <CompareForm onCompare={handleCompare} loading={loading} />

@@ -10,8 +10,14 @@ export async function fetchUserProfile(username: string): Promise<GitHubUser> {
   return res.json();
 }
 
-export async function fetchUserRepos(username: string): Promise<GitHubRepo[]> {
-  const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=30`);
+export async function fetchUserRepos(
+  username: string,
+  page: number = 1,
+  perPage: number = 10
+): Promise<GitHubRepo[]> {
+  const res = await fetch(
+    `${BASE_URL}/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=${perPage}&page=${page}`
+  );
   if (!res.ok) {
     return [];
   }
