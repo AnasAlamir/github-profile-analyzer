@@ -1,4 +1,4 @@
-import { GitHubUser, GitHubRepo } from "../types/github";
+import { GitHubUser, GitHubRepo, GitHubCommit, GitHubContentItem } from "../types/github";
 
 /**
  * Generate AI Summary & Analysis for a GitHub Profile using Groq API
@@ -8,6 +8,10 @@ export async function getAiProfileSummary(
   repos: GitHubRepo[]
 ): Promise<string> {
   const groqKey = process.env.GROQ_API_KEY;
+
+  if (!groqKey) {
+    throw new Error("GROQ_API_KEY is not configured in .env.local");
+  }
 
   // Extract top repository metadata for the AI prompt
   const topRepos = repos.slice(0, 10).map((r) => ({
@@ -25,72 +29,78 @@ Bio: ${user.bio || "None"}
 Public Repos: ${user.public_repos}, Followers: ${user.followers}
 Top Repositories: ${JSON.stringify(topRepos)}`;
 
-  // 1. Groq API (Super fast & generous rate limits via Llama-3)
-  if (groqKey) {
-    try {
-      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${groqKey}`,
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${groqKey}`,
+    },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert technical interviewer and software career analyzer.",
         },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert technical interviewer and software career analyzer.",
-            },
-            {
-              role: "user",
-              content: promptText,
-            },
-          ],
-          temperature: 0.5,
-        }),
-      });
-
-      const data = await response.json();
-      if (data?.choices?.[0]?.message?.content) {
-        return data.choices[0].message.content;
-      }
-    } catch (err) {
-      console.error("Groq API error, attempting fallback", err);
-    }
-  }
-
-  // 2. Fallback smart analysis when no API key is configured
-  const languagesCount: Record<string, number> = {};
-  let totalStars = 0;
-  repos.forEach((r) => {
-    totalStars += r.stargazers_count;
-    if (r.language) {
-      languagesCount[r.language] = (languagesCount[r.language] || 0) + 1;
-    }
+        {
+          role: "user",
+          content: promptText,
+        },
+      ],
+      temperature: 0.5,
+    }),
   });
 
-  const sortedLangs = Object.entries(languagesCount)
-    .sort(([, a], [, b]) => b - a)
-    .map(([lang]) => lang);
+  if (!response.ok) {
+    throw new Error(`Groq API request failed with status ${response.status}`);
+  }
 
-  const topLanguagesText = sortedLangs.slice(0, 3).join(", ") || "General Software Engineering";
+  const data = await response.json();
+  const content = data?.choices?.[0]?.message?.content;
 
-  return `### Executive Summary
-${user.name || user.login} is an active GitHub contributor with ${user.public_repos} public repositories and ${totalStars} total stars. Primary expertise is focused around ${topLanguagesText}.
+  if (!content) {
+    throw new Error("Empty response returned from Groq API");
+  }
 
-### Key Technical Strengths
-* **Primary Technologies:** ${topLanguagesText}
-* **Open Source Footprint:** ${repos.length} repositories analyzed
-* **Community Activity:** ${user.followers} followers
+  return content;
+}
 
-### Portfolio Highlights
-${topRepos
-  .slice(0, 3)
-  .map(
-    (r) =>
-      `* **${r.name}** (${r.language || "General"} | ⭐ ${r.stars}): ${
-        r.description || "Active open-source project"
-      }`
-  )
-  .join("\n")}`;
+/**
+ * Format Grounded Prompt for Repository Chat Assistant
+ */
+export function buildGroundedRepoPrompt(
+  repoName: string,
+  userMessage: string,
+  readme: string,
+  contents: GitHubContentItem[],
+  commits: GitHubCommit[]
+): string {
+  const treeSummary = contents
+    .slice(0, 15)
+    .map((item) => `- ${item.path} (${item.type})`)
+    .join("\n");
+
+  const commitSummary = commits
+    .slice(0, 5)
+    .map((c) => `- "${c.commit.message}" by ${c.commit.author.name}`)
+    .join("\n");
+
+  const readmeSnippet = readme.slice(0, 1500);
+
+  return `You are a helpful software engineering AI assistant answering questions about the repository "${repoName}".
+Your answers MUST be grounded in the following actual repository data:
+
+=== REPOSITORY DIRECTORY STRUCTURE ===
+${treeSummary || "No directory listing available"}
+
+=== RECENT COMMITS ===
+${commitSummary || "No recent commits found"}
+
+=== README DOCUMENTATION ===
+${readmeSnippet}
+
+=== USER QUESTION ===
+${userMessage}
+
+Please answer accurately and concisely based strictly on the above repository data.`;
 }

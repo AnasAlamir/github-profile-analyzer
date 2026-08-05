@@ -7,6 +7,7 @@ import SearchBar from "./SearchBar";
 import UserProfileCard from "./UserProfileCard";
 import RepositoryList from "./RepositoryList";
 import AiProfileSummary from "./AiProfileSummary";
+import AiRepoChatModal from "./AiRepoChatModal";
 
 export default function UserExplorer() {
   const [user, setUser] = useState<GitHubUser | null>(null);
@@ -17,8 +18,12 @@ export default function UserExplorer() {
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // AI Summary State
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+
+  // AI Repo Chat State
+  const [selectedRepoForChat, setSelectedRepoForChat] = useState<GitHubRepo | null>(null);
 
   // Search user profile and fetch page 1 of repos
   const handleSearch = async (username: string) => {
@@ -62,7 +67,7 @@ export default function UserExplorer() {
     }
   };
 
-  // Generate AI Profile Summary (only runs if not already loading or generated)
+  // Generate AI Profile Summary
   const handleGenerateSummary = async () => {
     if (!user || aiSummaryLoading || aiSummary) return;
 
@@ -127,6 +132,15 @@ export default function UserExplorer() {
           currentPage={currentPageNumber}
           onPageChange={handlePageChange}
           loading={loadingRepos}
+          onSelectRepoForChat={(repo) => setSelectedRepoForChat(repo)}
+        />
+      )}
+
+      {/* Grounded AI Repository Chat Modal */}
+      {selectedRepoForChat && (
+        <AiRepoChatModal
+          repo={selectedRepoForChat}
+          onClose={() => setSelectedRepoForChat(null)}
         />
       )}
     </div>

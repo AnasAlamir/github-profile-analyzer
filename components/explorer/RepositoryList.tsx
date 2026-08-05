@@ -8,6 +8,7 @@ interface RepositoryListProps {
   currentPage: number;
   onPageChange: (newPage: number) => void;
   loading: boolean;
+  onSelectRepoForChat?: (repo: GitHubRepo) => void;
 }
 
 export default function RepositoryList({
@@ -16,8 +17,8 @@ export default function RepositoryList({
   currentPage,
   onPageChange,
   loading,
+  onSelectRepoForChat,
 }: RepositoryListProps) {
-
   const itemsPerPage = 10;
   const totalPages = Math.ceil(totalPublicRepos / itemsPerPage) || 1;
 
@@ -33,7 +34,7 @@ export default function RepositoryList({
         </span>
       </div>
 
-      {/* Loading Indicator for Page Change */}
+      {/* Loading Indicator */}
       {loading && (
         <p className="text-sm text-center text-blue-600 py-6 font-medium animate-pulse">
           Fetching page {currentPage} repositories from GitHub...
@@ -69,14 +70,26 @@ export default function RepositoryList({
                 </p>
               </div>
 
-              <div className="flex items-center gap-4 text-xs text-gray-500 mt-4 pt-2 border-t border-gray-100">
-                {repo.language && (
-                  <span className="font-medium text-gray-700">
-                    ⚡ {repo.language}
-                  </span>
+              <div className="mt-4 pt-2 border-t border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-3 text-xs text-gray-500">
+                  {repo.language && (
+                    <span className="font-medium text-gray-700">
+                      ⚡ {repo.language}
+                    </span>
+                  )}
+                  <span>⭐ {repo.stargazers_count}</span>
+                  <span>🍴 {repo.forks_count}</span>
+                </div>
+
+                {/* AI Chat Button */}
+                {onSelectRepoForChat && (
+                  <button
+                    onClick={() => onSelectRepoForChat(repo)}
+                    className="px-2.5 py-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded transition flex items-center gap-1"
+                  >
+                    🤖 AI Chat
+                  </button>
                 )}
-                <span>⭐ {repo.stargazers_count}</span>
-                <span>🍴 {repo.forks_count}</span>
               </div>
             </div>
           ))}
