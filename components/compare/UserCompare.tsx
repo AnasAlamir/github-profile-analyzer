@@ -5,6 +5,7 @@ import { fetchUserProfile, fetchUserRepos } from "../../lib/github";
 import { calculateUserMetrics, UserMetrics } from "../../lib/compare";
 import CompareForm from "./CompareForm";
 import CompareResults from "./CompareResults";
+import { GitCompare } from "lucide-react";
 
 export default function UserCompare() {
   const [loading, setLoading] = useState(false);
@@ -37,19 +38,22 @@ export default function UserCompare() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mt-4">
-      <h2 className="text-xl font-bold mb-1 text-center text-gray-900">
-        ⚔️ Compare GitHub Users
-      </h2>
-      <p className="text-xs text-gray-500 text-center mb-5">
-        Compare two GitHub developers side-by-side on stars, forks, followers, and top languages.
-      </p>
+    <div className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-xs">
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold text-slate-900 flex items-center justify-center gap-2">
+          <GitCompare className="w-5 h-5 text-blue-600" />
+          <span>Compare GitHub Users</span>
+        </h2>
+        <p className="text-xs text-slate-500 mt-1">
+          Compare two GitHub developers side-by-side on stars, forks, followers, and top languages.
+        </p>
+      </div>
 
       {/* Comparison Input Form */}
       <CompareForm onCompare={handleCompare} loading={loading} />
 
       {/* Error Message */}
-      {error && <p className="text-red-600 text-sm text-center mb-4">{error}</p>}
+      {error && <p className="text-red-600 text-sm text-center mb-4 font-medium">{error}</p>}
 
       {/* Comparison Results */}
       {metrics1 && metrics2 && (

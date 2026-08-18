@@ -31,11 +31,11 @@ export function getProfileNote(username: string): string {
 
 export function saveProfileNote(username: string, content: string): void {
   const notes = getItem<Record<string, string>>(PROFILE_NOTES_KEY, {});
-  const cleanUser = username.toLowerCase();
+  const cleanUserName = username.toLowerCase();
   if (!content.trim()) {
-    delete notes[cleanUser];
+    delete notes[cleanUserName];
   } else {
-    notes[cleanUser] = content.trim();
+    notes[cleanUserName] = content.trim();
   }
   setItem(PROFILE_NOTES_KEY, notes);
 }
@@ -52,11 +52,11 @@ export function getRepoNote(repoFullName: string): string {
 
 export function saveRepoNote(repoFullName: string, content: string): void {
   const notes = getItem<Record<string, string>>(REPO_NOTES_KEY, {});
-  const cleanRepo = repoFullName.toLowerCase();
+  const cleanRepoFullName = repoFullName.toLowerCase();
   if (!content.trim()) {
-    delete notes[cleanRepo];
+    delete notes[cleanRepoFullName];
   } else {
-    notes[cleanRepo] = content.trim();
+    notes[cleanRepoFullName] = content.trim();
   }
   setItem(REPO_NOTES_KEY, notes);
 }

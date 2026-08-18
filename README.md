@@ -82,7 +82,7 @@ A full-stack web application built with **Next.js 16 (App Router)**, **TypeScrip
    Add your **Groq API Key** (get a free key at [Groq Console](https://console.groq.com/)):
    ```env
    GROQ_API_KEY=gsk_your_groq_api_key_here
-   
+   MODEL_NAME=openai/gpt-oss-20b 
    # Optional: GitHub Personal Access Token (increases API rate limit from 60 to 5,000 req/hr)
    # NEXT_PUBLIC_GITHUB_TOKEN=your_github_token_here
    ```

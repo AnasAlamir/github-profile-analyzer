@@ -12,6 +12,8 @@ export async function POST(req: Request) {
     }
 
     const groqKey = process.env.GROQ_API_KEY;
+    const model = process.env.MODEL_NAME || "openai/gpt-oss-120b";
+
     if (!groqKey) {
       return new Response(
         JSON.stringify({ error: "GROQ_API_KEY is not configured" }),
@@ -35,7 +37,7 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${groqKey}`,
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: model,
         messages: [
           {
             role: "system",

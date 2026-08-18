@@ -1,6 +1,7 @@
 "use client";
 
 import ReactMarkdown from "react-markdown";
+import { Sparkles } from "lucide-react";
 
 interface AiProfileSummaryProps {
   summary: string | null;
@@ -19,7 +20,7 @@ export default function AiProfileSummary({
     <div className="bg-purple-50/70 border border-purple-200 rounded-lg p-5 mb-6 shadow-xs relative">
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-sm font-bold text-purple-900 flex items-center gap-2">
-          ✨ AI Profile Insights & Analysis
+          <Sparkles className="w-4 h-4" /> AI Profile Insights & Analysis
         </h3>
         <button
           onClick={onClose}

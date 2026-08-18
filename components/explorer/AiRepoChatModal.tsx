@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { GitHubRepo, GitHubCommit, GitHubContentItem } from "../../types/github";
 import { fetchRepoReadme, fetchRepoCommits, fetchRepoContents } from "../../lib/github";
+import { Bot, X, Trash2, Send, Loader2 } from "lucide-react";
 
 interface ChatMessage {
   id: string;
@@ -51,7 +52,7 @@ export default function AiRepoChatModal({ repo, onClose }: AiRepoChatModalProps)
         {
           id: "welcome",
           sender: "ai",
-          text: `👋 Hello! I am your AI assistant for **${repo.name}**. Ask me anything about its codebase, architecture, README, or recent commits!`,
+          text: `Hello! I am your AI assistant for **${repo.name}**. Ask me anything about its codebase, architecture, README, or recent commits!`,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
@@ -109,7 +110,8 @@ export default function AiRepoChatModal({ repo, onClose }: AiRepoChatModalProps)
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    // Remove temporary clear history message if present
+    setMessages((prev) => prev.filter((m) => m.id !== "cleared_notice").concat(userMsg));
     setIsStreaming(true);
 
     const aiMsgId = (Date.now() + 1).toString();
@@ -180,7 +182,7 @@ export default function AiRepoChatModal({ repo, onClose }: AiRepoChatModalProps)
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === aiMsgId
-            ? { ...msg, text: "⚠️ Error generating AI response. Please try again." }
+            ? { ...msg, text: "Error generating AI response. Please try again." }
             : msg
         )
       );
@@ -195,7 +197,7 @@ export default function AiRepoChatModal({ repo, onClose }: AiRepoChatModalProps)
     localStorage.removeItem(storageKey);
     setMessages([
       {
-        id: Date.now().toString(),
+        id: "cleared_notice",
         sender: "ai",
         text: `Chat history cleared for **${repo.name}**.`,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -204,54 +206,57 @@ export default function AiRepoChatModal({ repo, onClose }: AiRepoChatModalProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full h-[80vh] flex flex-col shadow-2xl overflow-hidden border border-gray-200">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl max-w-3xl w-full h-[82vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
         {/* Header */}
-        <div className="p-4 bg-gray-900 text-white flex justify-between items-center">
+        <div className="p-4 bg-slate-900 text-white flex justify-between items-center border-b border-slate-800">
           <div>
             <h3 className="font-bold text-base flex items-center gap-2">
-              🤖 Grounded AI Chat: <span className="text-blue-400">{repo.name}</span>
+              <Bot className="w-5 h-5 text-blue-400" />
+              <span>Grounded AI Chat: <span className="text-blue-400">{repo.name}</span></span>
             </h3>
-            <p className="text-xs text-gray-300 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               Grounded in README ({readme ? "Loaded" : "Loading..."}), Files ({contents.length}), & Commits ({commits.length})
             </p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={handleClearHistory}
-              className="text-xs text-gray-400 hover:text-red-400 underline"
+              className="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1 font-medium"
             >
-              Clear History
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Clear History</span>
             </button>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white text-2xl font-bold leading-none"
+              className="text-slate-400 hover:text-white p-1 rounded-md transition"
             >
-              &times;
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Loading Indicator */}
         {dataLoading && (
-          <div className="bg-blue-50 px-4 py-1.5 text-xs text-blue-700 border-b border-blue-100 flex items-center gap-2">
-            <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            Loading repository context (README, files & commits) to ground AI answers...
+          <div className="bg-blue-50 px-4 py-2 text-xs text-blue-700 border-b border-blue-100 flex items-center gap-2 font-medium">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <span>Loading repository context (README, files & commits) to ground AI answers...</span>
           </div>
         )}
 
         {/* Chat Message List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
           {messages.map((msg) => (
             <div
               key={msg.id}
               className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-lg p-3 text-xs leading-relaxed ${msg.sender === "user"
+                className={`max-w-[85%] rounded-xl p-3.5 text-xs leading-relaxed shadow-2xs ${
+                  msg.sender === "user"
                     ? "bg-blue-600 text-white rounded-br-none"
-                    : "bg-white text-gray-900 border border-gray-200 shadow-xs rounded-bl-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
-                  }`}
+                    : "bg-white text-slate-900 border border-slate-200 rounded-bl-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
+                }`}
               >
                 {msg.sender === "user" ? (
                   msg.text
@@ -259,28 +264,38 @@ export default function AiRepoChatModal({ repo, onClose }: AiRepoChatModalProps)
                   <ReactMarkdown>{msg.text || (isStreaming ? "..." : "")}</ReactMarkdown>
                 )}
               </div>
-              <span className="text-[10px] text-gray-400 mt-1 px-1">{msg.timestamp}</span>
+              <span className="text-[10px] text-slate-400 mt-1 px-1">{msg.timestamp}</span>
             </div>
           ))}
           <div ref={chatBottomRef} />
         </div>
 
         {/* Chat Input Bar */}
-        <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-200 flex gap-2">
+        <form onSubmit={handleSend} className="p-3.5 bg-white border-t border-slate-200 flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={`Ask a question about ${repo.name}...`}
             disabled={isStreaming}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded text-xs text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
           />
           <button
             type="submit"
             disabled={isStreaming || !input.trim()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded text-xs disabled:bg-gray-400 transition"
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-xs disabled:bg-slate-300 disabled:cursor-not-allowed transition flex items-center gap-1.5 shadow-xs"
           >
-            {isStreaming ? "Streaming..." : "Send"}
+            {isStreaming ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Streaming...</span>
+              </>
+            ) : (
+              <>
+                <Send className="w-3.5 h-3.5" />
+                <span>Send</span>
+              </>
+            )}
           </button>
         </form>
       </div>

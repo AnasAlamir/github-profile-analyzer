@@ -1,5 +1,7 @@
 "use client";
 
+import { Crown } from "lucide-react";
+
 interface CompareRowProps {
   label: string;
   val1: number;
@@ -11,16 +13,18 @@ export default function CompareRow({ label, val1, val2 }: CompareRowProps) {
   const isUser2Winner = val2 > val1;
 
   return (
-    <div className="grid grid-cols-3 py-3 items-center text-center">
-      <span className="text-left font-medium text-gray-600">{label}</span>
+    <div className="grid grid-cols-3 py-3 items-center text-center text-sm border-b border-slate-100">
+      <span className="text-left font-semibold text-slate-700">{label}</span>
 
-      <span className={`font-bold ${isUser1Winner ? "text-green-600 text-base" : "text-gray-900"}`}>
-        {val1.toLocaleString()} {isUser1Winner && "👑"}
-      </span>
+      <div className={`font-bold flex items-center justify-center gap-1.5 ${isUser1Winner ? "text-emerald-600 text-base" : "text-slate-900"}`}>
+        <span>{val1.toLocaleString()}</span>
+        {isUser1Winner && <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />}
+      </div>
 
-      <span className={`font-bold ${isUser2Winner ? "text-green-600 text-base" : "text-gray-900"}`}>
-        {val2.toLocaleString()} {isUser2Winner && "👑"}
-      </span>
+      <div className={`font-bold flex items-center justify-center gap-1.5 ${isUser2Winner ? "text-emerald-600 text-base" : "text-slate-900"}`}>
+        <span>{val2.toLocaleString()}</span>
+        {isUser2Winner && <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />}
+      </div>
     </div>
   );
 }

@@ -16,6 +16,9 @@ import RepositoryList from "./RepositoryList";
 import AiProfileSummary from "./AiProfileSummary";
 import AiRepoChatModal from "./AiRepoChatModal";
 import NotesModal from "../common/NotesModal";
+import { Search } from "lucide-react";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function UserExplorer() {
   const [user, setUser] = useState<GitHubUser | null>(null);
@@ -39,7 +42,7 @@ export default function UserExplorer() {
   const [notesModalInitialNote, setNotesModalInitialNote] = useState("");
   const [notesModalSaveHandler, setNotesModalSaveHandler] = useState<
     (note: string) => void
-  >(() => () => {});
+  >(() => () => { });
   const [currentProfileNote, setCurrentProfileNote] = useState("");
   const [repoNotesMap, setRepoNotesMap] = useState<Record<string, string>>({});
 
@@ -65,7 +68,7 @@ export default function UserExplorer() {
     try {
       const [profileData, page1Repos] = await Promise.all([
         fetchUserProfile(username),
-        fetchUserRepos(username, 1, 10),
+        fetchUserRepos(username, 1, ITEMS_PER_PAGE),
       ]);
 
       setUser(profileData);
@@ -89,8 +92,7 @@ export default function UserExplorer() {
     setCurrentPageNumber(newPageNumber);
 
     try {
-      const itemsPerPage = 10;
-      const pageRepos = await fetchUserRepos(user.login, newPageNumber, itemsPerPage);
+      const pageRepos = await fetchUserRepos(user.login, newPageNumber, ITEMS_PER_PAGE);
       setRepos(pageRepos);
     } catch (err) {
       console.error("Failed to load page repositories", err);
@@ -152,13 +154,16 @@ export default function UserExplorer() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-      <h2 className="text-xl font-bold mb-1 text-center text-gray-900">
-        🔍 Profile Explorer
-      </h2>
-      <p className="text-xs text-gray-500 text-center mb-5">
-        Enter a GitHub username below to view their profile, stats, and public repositories.
-      </p>
+    <div className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-xs">
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold text-slate-900 flex items-center justify-center gap-2">
+          <Search className="w-5 h-5 text-blue-600" />
+          <span>Profile Explorer</span>
+        </h2>
+        <p className="text-xs text-slate-500 mt-1">
+          Enter a GitHub username below to view their profile, stats, and public repositories.
+        </p>
+      </div>
 
       <SearchBar onSearch={handleSearch} loading={loading} />
 

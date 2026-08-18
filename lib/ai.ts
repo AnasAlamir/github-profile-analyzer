@@ -8,6 +8,7 @@ export async function getAiProfileSummary(
   repos: GitHubRepo[]
 ): Promise<string> {
   const groqKey = process.env.GROQ_API_KEY;
+  const model = process.env.MODEL_NAME || "openai/gpt-oss-120b";
 
   if (!groqKey) {
     throw new Error("GROQ_API_KEY is not configured in .env.local");
@@ -36,7 +37,7 @@ Top Repositories: ${JSON.stringify(topRepos)}`;
       Authorization: `Bearer ${groqKey}`,
     },
     body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
+      model: model,
       messages: [
         {
           role: "system",
