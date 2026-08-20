@@ -1,6 +1,6 @@
 # 🚀 GitHub Profile Explorer & AI Analyzer
 
-A full-stack web application built with **Next.js 16 (App Router)**, **TypeScript**, **Tailwind CSS**, and **Groq AI (Llama 3.3)** that allows users to search, analyze, compare GitHub profiles, and interact with repository codebases using grounded AI.
+A full-stack web application built with **Next.js 16 (App Router)**, **TypeScript**, **Tailwind CSS**, and **Groq AI (gpt-oss-20b)** that allows users to search, analyze, compare GitHub profiles, and interact with repository codebases using grounded AI.
 
 🔗 **Live Demo**: [https://github-profile-analyzer-pi-nine.vercel.app/](https://github-profile-analyzer-pi-nine.vercel.app/)  
 
@@ -48,7 +48,7 @@ A full-stack web application built with **Next.js 16 (App Router)**, **TypeScrip
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **AI Integration**: Groq API (`openai/gpt-oss-20b `)
+- **AI Integration**: Groq API (`openai/gpt-oss-20b`)
 - **Markdown Rendering**: `react-markdown`
 - **Data Persistence**: Browser `localStorage`
 - **Architecture**: Modular feature-based folder organization (`components/explorer`, `components/compare`, `components/notes`, `components/common`, `lib/`, `types/`)
