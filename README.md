@@ -20,7 +20,7 @@ A full-stack web application built with **Next.js 16 (App Router)**, **TypeScrip
 
 ### 3. ✨ AI Profile Summarization & Analysis
 - Server-side Next.js API Route Handler (`POST /api/ai/summary`).
-- Uses **Groq API** (`llama-3.3-70b-versatile`) to generate structured AI insights:
+- Uses **Groq API** (`openai/gpt-oss-20b `) to generate structured AI insights:
   - 🎯 **Executive Summary**
   - ⚡ **Key Technical Strengths**
   - 🌟 **Portfolio Highlights**
@@ -48,7 +48,7 @@ A full-stack web application built with **Next.js 16 (App Router)**, **TypeScrip
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **AI Integration**: Groq API (`llama-3.3-70b-versatile`)
+- **AI Integration**: Groq API (`openai/gpt-oss-20b `)
 - **Markdown Rendering**: `react-markdown`
 - **Data Persistence**: Browser `localStorage`
 - **Architecture**: Modular feature-based folder organization (`components/explorer`, `components/compare`, `components/notes`, `components/common`, `lib/`, `types/`)
